@@ -1,10 +1,14 @@
 package application;
 
+import boardgame.Position;
+
 public class Program {
 
 	public static void main(String[] args) {
 
-		System.out.println("Chess-Game-in-Java");
+		Position pos = new Position(10, 2);
+		
+		System.out.println(pos);
 
 	}
 
