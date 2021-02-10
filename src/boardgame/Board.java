@@ -39,4 +39,18 @@ public class Board {
 		
 		return piece(position.getRow(), position.getColumn());
 	}
+	
+	public boolean placePiece(Piece piece, Position position) {
+		
+		if (position.getRow() >= rows || position.getColumn() >= columns) {
+			
+			return false;
+		}
+		
+		pieces[position.getRow()][position.getColumn()] = piece;
+		
+		piece.position = position;
+		
+		return true;
+	}
 }
