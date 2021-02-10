@@ -16,12 +16,27 @@ public class Board {
 	}
 
 	public int getRows() {
+		
 		return rows;
 	}
 
 	public int getColumns() {
+		
 		return columns;
 	}
 	
+	public Piece piece(int row, int column) {
+		
+		if (row >= this.rows || column >= this.columns) {
+			
+			return null;
+		}
+		
+		return pieces[row][column];
+	}
 	
+	public Piece piece(Position position) {
+		
+		return piece(position.getRow(), position.getColumn());
+	}
 }
