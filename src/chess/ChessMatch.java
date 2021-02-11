@@ -1,5 +1,8 @@
 package chess;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import boardgame.Board;
 import boardgame.Piece;
 import boardgame.Position;
@@ -10,7 +13,11 @@ public class ChessMatch {
 
 	private int turn;
 	private Color currentPlayer;
+	
 	private Board board;
+	
+	private List<Piece> piecesOnTheBoard = new ArrayList<Piece>();
+	private List<Piece> capturedPieces = new ArrayList<Piece>();
 	
 	public ChessMatch() {
 		
@@ -78,6 +85,12 @@ public class ChessMatch {
 		
 		board.placePiece(p, target);
 		
+		if (capturePiece != null) {
+			
+			piecesOnTheBoard.remove(capturePiece);
+			capturedPieces.add((ChessPiece)capturePiece);
+		}
+
 		return capturePiece;
 	}
 	
@@ -94,6 +107,7 @@ public class ChessMatch {
 		}
 		
 		if (!board.piece(position).isThereAnyPossibleMove()) {
+			
 			throw new ChessException("There is no possible moves for the chosen piece.");
 		}
 	}
@@ -109,6 +123,8 @@ public class ChessMatch {
 	private void placeNewPiece(char column, int row, ChessPiece piece) {
 		
 		board.placePiece(piece, new ChessPosition(column, row).toPosition());
+		
+		piecesOnTheBoard.add(piece);
 	}
 	
 	private void nextTurn() {
