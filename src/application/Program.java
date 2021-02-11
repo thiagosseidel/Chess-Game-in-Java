@@ -21,7 +21,7 @@ public class Program {
 
 				UI.clearScrren();
 				
-				UI.printBoard(chessMatch.getPieces());
+				UI.printMatch(chessMatch);
 				
 				System.out.println();
 				
