@@ -1,16 +1,20 @@
 package chess.pieces;
 
-import chess.Color;
-import chess.ChessPiece;
 import boardgame.Board;
 import boardgame.Position;
+import chess.ChessMatch;
+import chess.ChessPiece;
+import chess.Color;
 
 
 public class Pawn extends ChessPiece {
 
-	public Pawn(Board board, Color color) {
+	private ChessMatch chessMatch;
+	
+	public Pawn(Board board, Color color, ChessMatch chessMatch) {
 		super(board, color);
 
+		this.chessMatch = chessMatch;
 	}
 
 	@Override
@@ -69,6 +73,23 @@ public class Pawn extends ChessPiece {
 					
 					matPossibleMoves[p.getRow()][p.getColumn()] = true;
 				}
+		}
+		
+		// #specialmove en passant
+		ChessPiece cpVulnerable = chessMatch.getEnPassantVulnerable();
+		
+		if (cpVulnerable != null && getColor() != cpVulnerable.getColor())
+		{
+			final Position posVulnerable = cpVulnerable.getPosition();
+			
+			final int initialRowEnPassant = (getColor() ==  Color.WHITE) ? 3 : 4;
+			
+			if (position.getRow() == initialRowEnPassant &&
+				posVulnerable.getRow() == initialRowEnPassant &&
+				Math.abs(position.getColumn() - posVulnerable.getColumn()) == 1) {
+				
+				matPossibleMoves[position.getRow() + aux][posVulnerable.getColumn()] = true;
+			}
 		}
 
 		return matPossibleMoves;

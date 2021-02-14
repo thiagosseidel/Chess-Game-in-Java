@@ -12,7 +12,13 @@ public abstract class Piece {
 		this.position = null;
 	}
 
+	public final Position getPosition() {
+		
+		return position;
+	}
+
 	protected Board getBoard() {
+	
 		return board;
 	}
 	

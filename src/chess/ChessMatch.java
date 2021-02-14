@@ -24,6 +24,8 @@ public class ChessMatch {
 	private boolean check;
 	private boolean checkMate;
 	
+	private ChessPiece enPassantVulnerable;
+	
 	private List<Piece> piecesOnTheBoard = new ArrayList<Piece>();
 	private List<Piece> capturedPieces = new ArrayList<Piece>();
 	
@@ -31,7 +33,7 @@ public class ChessMatch {
 		
 		board = new Board(8, 8);
 		
-		turn = 0;
+		turn = 1;
 		currentPlayer = Color.WHITE;
 		
 		check = false;
@@ -54,9 +56,14 @@ public class ChessMatch {
 		return check;
 	}
 	
-public boolean getCheckMate() {
+	public boolean getCheckMate() {
 		
 		return checkMate;
+	}
+	
+	public ChessPiece getEnPassantVulnerable() {
+	
+		return enPassantVulnerable;
 	}
 	
 	public ChessPiece[][] getPieces() {
@@ -100,6 +107,8 @@ public boolean getCheckMate() {
 			throw new ChessException("You can't put yourself in check.");
 		}
 		
+		ChessPiece movedPiece = (ChessPiece) board.piece(target);
+		
 		check = testCheck(opponent(currentPlayer));
 		
 		if (check && testCheckMate(opponent(currentPlayer))) {
@@ -109,6 +118,16 @@ public boolean getCheckMate() {
 		else {
 			
 			nextTurn();
+		}
+		
+		// #specialmove en passant
+		if (movedPiece instanceof Pawn && Math.abs(source.getRow() - target.getRow()) == 2) {
+			
+			enPassantVulnerable = movedPiece;
+		}
+		else {
+			
+			enPassantVulnerable = null;
 		}
 		
 		return (ChessPiece) capturePiece;
@@ -124,6 +143,15 @@ public boolean getCheckMate() {
 		
 		board.placePiece(p, target);
 		
+		// #specialmove en passant
+		if (p instanceof Pawn && enPassantVulnerable != null) {
+			
+			if (source.getColumn() != target.getColumn() && capturedPiece == null) {
+			
+				capturedPiece = board.removePiece(enPassantVulnerable.getPosition());
+			}
+		}
+		
 		if (capturedPiece != null) {
 			
 			capturedPieces.add(capturedPiece);
@@ -135,12 +163,11 @@ public boolean getCheckMate() {
 			
 			// castling kingside rook
 			if (target.getColumn() == (source.getColumn() + 2)) {
-				
+
 				Position sourceRook = new Position(source.getRow(), source.getColumn() + 3);
 				Position targetRook = new Position(source.getRow(), source.getColumn() + 1);
-				
+
 				makeMove(sourceRook, targetRook);
-				
 			}
 			
 			// castling queenside rook
@@ -182,7 +209,7 @@ public boolean getCheckMate() {
 				Position sourceRook = new Position(source.getRow(), source.getColumn() + 3);
 				Position targetRook = new Position(source.getRow(), source.getColumn() + 1);
 				
-				undoMove(sourceRook, targetRook, null);
+				undoMove(sourceRook, targetRook, capturedPiece);
 				
 			}
 			
@@ -192,8 +219,29 @@ public boolean getCheckMate() {
 				Position sourceRook = new Position(source.getRow(), source.getColumn() - 4);
 				Position targetRook = new Position(source.getRow(), source.getColumn() - 1);
 				
-				undoMove(sourceRook, targetRook, null);
+				undoMove(sourceRook, targetRook, capturedPiece);
 				
+			}
+		}
+		
+		// #specialmove en passant
+		if (p instanceof Pawn && enPassantVulnerable != null) {
+			
+			if (source.getColumn() != target.getColumn() && capturedPiece == enPassantVulnerable) {
+			
+				Position posVulnerable = null;
+				
+				if (p.getColor() == Color.WHITE) {
+					
+					posVulnerable = new Position(3, target.getColumn());
+				}
+				else
+				{
+					posVulnerable = new Position(4, target.getColumn());
+				}
+				
+				board.removePiece(enPassantVulnerable.getPosition());
+				board.placePiece(enPassantVulnerable, posVulnerable);
 			}
 		}
 	}
@@ -319,14 +367,14 @@ public boolean getCheckMate() {
 	
 	private void initialSetup() {
 		
-		placeNewPiece('a', 2, new Pawn(board, Color.WHITE));
-		placeNewPiece('b', 2, new Pawn(board, Color.WHITE));
-		placeNewPiece('c', 2, new Pawn(board, Color.WHITE));
-		placeNewPiece('d', 2, new Pawn(board, Color.WHITE));
-		placeNewPiece('e', 2, new Pawn(board, Color.WHITE));
-		placeNewPiece('f', 2, new Pawn(board, Color.WHITE));
-		placeNewPiece('g', 2, new Pawn(board, Color.WHITE));
-		placeNewPiece('h', 2, new Pawn(board, Color.WHITE));
+		placeNewPiece('a', 2, new Pawn(board, Color.WHITE, this));
+		placeNewPiece('b', 2, new Pawn(board, Color.WHITE, this));
+		placeNewPiece('c', 2, new Pawn(board, Color.WHITE, this));
+		placeNewPiece('d', 2, new Pawn(board, Color.WHITE, this));
+		placeNewPiece('e', 2, new Pawn(board, Color.WHITE, this));
+		placeNewPiece('f', 2, new Pawn(board, Color.WHITE, this));
+		placeNewPiece('g', 2, new Pawn(board, Color.WHITE, this));
+		placeNewPiece('h', 2, new Pawn(board, Color.WHITE, this));
 		
 		placeNewPiece('a', 1, new Rook(board, Color.WHITE));
         placeNewPiece('h', 1, new Rook(board, Color.WHITE));
@@ -338,14 +386,14 @@ public boolean getCheckMate() {
         placeNewPiece('e', 1, new King(board, Color.WHITE, this));
 
         
-        placeNewPiece('a', 7, new Pawn(board, Color.BLACK));
-		placeNewPiece('b', 7, new Pawn(board, Color.BLACK));
-		placeNewPiece('c', 7, new Pawn(board, Color.BLACK));
-		placeNewPiece('d', 7, new Pawn(board, Color.BLACK));
-		placeNewPiece('e', 7, new Pawn(board, Color.BLACK));
-		placeNewPiece('f', 7, new Pawn(board, Color.BLACK));
-		placeNewPiece('g', 7, new Pawn(board, Color.BLACK));
-		placeNewPiece('h', 7, new Pawn(board, Color.BLACK));
+        placeNewPiece('a', 7, new Pawn(board, Color.BLACK, this));
+		placeNewPiece('b', 7, new Pawn(board, Color.BLACK, this));
+		placeNewPiece('c', 7, new Pawn(board, Color.BLACK, this));
+		placeNewPiece('d', 7, new Pawn(board, Color.BLACK, this));
+		placeNewPiece('e', 7, new Pawn(board, Color.BLACK, this));
+		placeNewPiece('f', 7, new Pawn(board, Color.BLACK, this));
+		placeNewPiece('g', 7, new Pawn(board, Color.BLACK, this));
+		placeNewPiece('h', 7, new Pawn(board, Color.BLACK, this));
         
         placeNewPiece('a', 8, new Rook(board, Color.BLACK));
         placeNewPiece('h', 8, new Rook(board, Color.BLACK));
